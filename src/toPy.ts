@@ -38,6 +38,14 @@ function buildDelimiter(cellType: string, meta: Record<string, unknown>): string
 export function toPy(notebook: Notebook): string {
   const parts: string[] = [];
 
+  if (Object.keys(notebook.metadata).length > 0) {
+    const lines = Object.entries(notebook.metadata).map(([k, v]) => {
+      const valStr = typeof v === 'object' && v !== null ? JSON.stringify(v) : v;
+      return `# ${k}: ${valStr}`;
+    });
+    parts.push(`# ---\n${lines.join("\n")}\n# ---`);
+  }
+
   for (const cell of notebook.cells) {
     const delimiter = buildDelimiter(cell.cell_type, cell.metadata);
     const src = joinSource(cell.source);

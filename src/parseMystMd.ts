@@ -81,7 +81,14 @@ function parseFrontMatter(yamlLines: string[]): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const line of yamlLines) {
     const m = line.match(/^([\w-]+):\s*(.*)/);
-    if (m) result[m[1]] = m[2].trim();
+    if (m) {
+      const val = m[2].trim();
+      try {
+        result[m[1]] = JSON.parse(val);
+      } catch {
+        result[m[1]] = val;
+      }
+    }
   }
   return result;
 }

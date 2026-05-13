@@ -28,6 +28,15 @@ function commentLines(text: string): string {
  */
 export function toSphinxGallery(notebook: Notebook): string {
   const parts: string[] = [];
+
+  if (Object.keys(notebook.metadata).length > 0) {
+    const lines = Object.entries(notebook.metadata).map(([k, v]) => {
+      const valStr = typeof v === 'object' && v !== null ? JSON.stringify(v) : v;
+      return `# ${k}: ${valStr}`;
+    });
+    parts.push(`# ---\n${lines.join("\n")}\n# ---`);
+  }
+
   const cells = notebook.cells.filter((c) => c.cell_type !== "raw");
   let i = 0;
 
