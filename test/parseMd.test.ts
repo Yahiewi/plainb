@@ -134,6 +134,22 @@ describe("parseMystMd", () => {
     assert.equal(nb.metadata.kernelspec, "python3");
   });
 
+  test("nested JSON object in front matter parsed back to object, not string", () => {
+    const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+    const input = `---\nkernelspec: ${JSON.stringify(kernelspec)}\n---\n# Hello`;
+    const nb = parseMystMd(input);
+    assert.deepEqual(nb.metadata.kernelspec, kernelspec);
+  });
+
+  test("multiple nested metadata objects parsed correctly", () => {
+    const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+    const language_info = { name: "python", version: "3.11" };
+    const input = `---\nkernelspec: ${JSON.stringify(kernelspec)}\nlanguage_info: ${JSON.stringify(language_info)}\n---\n# Hello`;
+    const nb = parseMystMd(input);
+    assert.deepEqual(nb.metadata.kernelspec, kernelspec);
+    assert.deepEqual(nb.metadata.language_info, language_info);
+  });
+
   test("no spurious empty markdown cell between two directives", () => {
     const nb = parseMystMd("```{code-cell}\na=1\n```\n```{code-cell}\nb=2\n```");
     assert.equal(nb.cells.length, 2);

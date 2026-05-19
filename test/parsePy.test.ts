@@ -115,3 +115,41 @@ test("source non-last lines end with newline", () => {
   const src = nb.cells[0].source;
   assert.ok(src[0].endsWith("\n"));
 });
+
+// ---------------------------------------------------------------------------
+// Front-matter metadata
+// ---------------------------------------------------------------------------
+
+test("# --- front matter block parsed into notebook metadata", () => {
+  const input = "# ---\n# title: My Notebook\n# ---\n\n# %%\nx = 1\n";
+  const nb = parsePy(input);
+  assert.equal(nb.metadata.title, "My Notebook");
+});
+
+test("nested JSON in front matter parsed back to object", () => {
+  const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+  const input = `# ---\n# kernelspec: ${JSON.stringify(kernelspec)}\n# ---\n\n# %%\nx = 1\n`;
+  const nb = parsePy(input);
+  assert.deepEqual(nb.metadata.kernelspec, kernelspec);
+});
+
+test("front matter does not appear as a cell", () => {
+  const input = "# ---\n# title: My Notebook\n# ---\n\n# %%\nx = 1\n";
+  const nb = parsePy(input);
+  assert.equal(nb.cells.length, 1);
+  assert.equal(nb.cells[0].cell_type, "code");
+});
+
+test("no front matter → empty metadata", () => {
+  const nb = parsePy("# %%\nx = 1\n");
+  assert.deepEqual(nb.metadata, {});
+});
+
+test("no-delimiter file with front matter → metadata set, single code cell", () => {
+  const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+  const input = `# ---\n# kernelspec: ${JSON.stringify(kernelspec)}\n# ---\nx = 1\n`;
+  const nb = parsePy(input);
+  assert.deepEqual(nb.metadata.kernelspec, kernelspec);
+  assert.equal(nb.cells.length, 1);
+  assert.equal(nb.cells[0].cell_type, "code");
+});

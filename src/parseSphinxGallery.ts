@@ -1,4 +1,5 @@
 import { codeCell, markdownCell, makeNotebook, type Cell, type Notebook } from "./notebook";
+import { parseFrontMatter } from "./utils";
 
 // ---------------------------------------------------------------------------
 // RST helpers
@@ -104,22 +105,6 @@ function extractDocstring(lines: string[]): { content: string; end: number } | n
     contentLines.push(lines[i]);
   }
   return null;
-}
-
-function parseFrontMatter(yamlLines: string[]): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const line of yamlLines) {
-    const m = line.match(/^([\w-]+):\s*(.*)/);
-    if (m) {
-      const val = m[2].trim();
-      try {
-        result[m[1]] = JSON.parse(val);
-      } catch {
-        result[m[1]] = val;
-      }
-    }
-  }
-  return result;
 }
 
 // ---------------------------------------------------------------------------

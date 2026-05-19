@@ -6,6 +6,7 @@ import {
   type Cell,
   type Notebook,
 } from "./notebook";
+import { parseFrontMatter } from "./utils";
 
 // ---------------------------------------------------------------------------
 // Percent format parser
@@ -81,22 +82,6 @@ function stripTrailingBlank(lines: string[]): string[] {
   return lines.slice(0, end);
 }
 
-function parseFrontMatter(yamlLines: string[]): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const line of yamlLines) {
-    const m = line.match(/^([\w-]+):\s*(.*)/);
-    if (m) {
-      const val = m[2].trim();
-      try {
-        result[m[1]] = JSON.parse(val);
-      } catch {
-        result[m[1]] = val;
-      }
-    }
-  }
-  return result;
-}
-
 export function parsePy(text: string): Notebook {
   // Normalize line endings
   const lines = text.replace(/\r\n/g, "\n").split("\n");
@@ -118,6 +103,7 @@ export function parsePy(text: string): Notebook {
   }
 
   // Find all delimiter positions
+  const contentStart = i;
   const delimiters: Array<{ idx: number; rest: string }> = [];
   for (; i < lines.length; i++) {
     const m = lines[i].match(DELIMITER_RE);
@@ -126,7 +112,7 @@ export function parsePy(text: string): Notebook {
 
   if (delimiters.length === 0) {
     // No delimiters — entire file is one code cell
-    const source = lines.slice(i > 0 ? i : 0).join("\n");
+    const source = lines.slice(contentStart).join("\n");
     if (source.trim()) cells.push(codeCell(source, {}, used));
     return makeNotebook(cells, notebookMeta);
   }
