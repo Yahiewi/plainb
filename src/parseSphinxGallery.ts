@@ -1,4 +1,5 @@
 import { codeCell, markdownCell, makeNotebook, type Cell, type Notebook } from "./notebook";
+import { parseFrontMatter } from "./utils";
 
 // ---------------------------------------------------------------------------
 // RST helpers
@@ -116,17 +117,30 @@ export function parseSphinxGallery(text: string): Notebook {
   const lines = text.replace(/\r\n/g, "\n").split("\n");
   const cells: Cell[] = [];
   const used = new Set<string>();
+  let notebookMeta: Record<string, unknown> = {};
 
   let i = 0;
 
+  // Check for commented YAML front matter at the top
+  if (lines[0] === "# ---") {
+    i = 1;
+    const fmLines: string[] = [];
+    while (i < lines.length && lines[i] !== "# ---") {
+      fmLines.push(lines[i].replace(/^#\s?/, ""));
+      i++;
+    }
+    i++; // skip closing # ---
+    notebookMeta = parseFrontMatter(fmLines);
+  }
+
   // 1. Module docstring → first markdown cell
-  const ds = extractDocstring(lines);
+  const ds = extractDocstring(lines.slice(i));
   if (ds) {
     const raw = ds.content.split("\n");
     const converted = rstHeadingsToMd(raw).map(substituteRstRoles);
     const trimmed = stripTrailingBlank(stripLeadingBlank(converted)).join("\n");
     if (trimmed) cells.push(markdownCell(trimmed, {}, used));
-    i = ds.end;
+    i += ds.end;
   }
 
   // 2. Skip lines before first # %% (authors, SPDX, blanks)
@@ -167,5 +181,5 @@ export function parseSphinxGallery(text: string): Notebook {
     }
   }
 
-  return makeNotebook(cells);
+  return makeNotebook(cells, notebookMeta);
 }

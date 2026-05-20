@@ -6,6 +6,7 @@ import {
   type Cell,
   type Notebook,
 } from "./notebook";
+import { parseFrontMatter } from "./utils";
 
 // ---------------------------------------------------------------------------
 // MyST notebook format parser
@@ -71,17 +72,6 @@ function parseOptions(lines: string[]): Record<string, unknown> {
     } else {
       result[key] = val;
     }
-  }
-  return result;
-}
-
-/** Parse notebook-level YAML front matter (---...---) into a plain object.
- *  Only handles flat key: value pairs — sufficient for kernelspec. */
-function parseFrontMatter(yamlLines: string[]): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const line of yamlLines) {
-    const m = line.match(/^([\w-]+):\s*(.*)/);
-    if (m) result[m[1]] = m[2].trim();
   }
   return result;
 }

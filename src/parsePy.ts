@@ -6,6 +6,7 @@ import {
   type Cell,
   type Notebook,
 } from "./notebook";
+import { parseFrontMatter } from "./utils";
 
 // ---------------------------------------------------------------------------
 // Percent format parser
@@ -86,19 +87,34 @@ export function parsePy(text: string): Notebook {
   const lines = text.replace(/\r\n/g, "\n").split("\n");
   const cells: Cell[] = [];
   const used = new Set<string>();
+  let notebookMeta: Record<string, unknown> = {};
+
+  // Check for commented YAML front matter at the top
+  let i = 0;
+  if (lines[0] === "# ---") {
+    i = 1;
+    const fmLines: string[] = [];
+    while (i < lines.length && lines[i] !== "# ---") {
+      fmLines.push(lines[i].replace(/^#\s?/, ""));
+      i++;
+    }
+    i++; // skip closing # ---
+    notebookMeta = parseFrontMatter(fmLines);
+  }
 
   // Find all delimiter positions
+  const contentStart = i;
   const delimiters: Array<{ idx: number; rest: string }> = [];
-  for (let i = 0; i < lines.length; i++) {
+  for (; i < lines.length; i++) {
     const m = lines[i].match(DELIMITER_RE);
     if (m) delimiters.push({ idx: i, rest: m[1] });
   }
 
   if (delimiters.length === 0) {
     // No delimiters — entire file is one code cell
-    const source = lines.join("\n");
+    const source = lines.slice(contentStart).join("\n");
     if (source.trim()) cells.push(codeCell(source, {}, used));
-    return makeNotebook(cells);
+    return makeNotebook(cells, notebookMeta);
   }
 
   for (let d = 0; d < delimiters.length; d++) {
@@ -123,5 +139,5 @@ export function parsePy(text: string): Notebook {
     }
   }
 
-  return makeNotebook(cells);
+  return makeNotebook(cells, notebookMeta);
 }

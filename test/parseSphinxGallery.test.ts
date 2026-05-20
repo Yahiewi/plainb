@@ -115,3 +115,63 @@ test("output notebook written to test/outputs/calibration_curves.ipynb", () => {
   );
   assert.equal(JSON.parse(written).nbformat, 4);
 });
+
+// ---------------------------------------------------------------------------
+// Front-matter metadata (inline tests, no fixture file)
+// ---------------------------------------------------------------------------
+
+test("# --- front matter block parsed into notebook metadata", () => {
+  const input = [
+    "# ---",
+    "# title: My Gallery",
+    "# ---",
+    '"""',
+    "# My Gallery",
+    '"""',
+    "",
+    "# %%",
+    "x = 1"
+  ].join("\n");
+  const result = parseSphinxGallery(input);
+  assert.equal(result.metadata.title, "My Gallery");
+});
+
+test("nested JSON in # --- front matter parsed back to object", () => {
+  const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+  const input = [
+    "# ---",
+    `# kernelspec: ${JSON.stringify(kernelspec)}`,
+    "# ---",
+    '"""',
+    "# Docs",
+    '"""',
+    "",
+    "# %%",
+    "x = 1"
+  ].join("\n");
+  const result = parseSphinxGallery(input);
+  assert.deepEqual(result.metadata.kernelspec, kernelspec);
+});
+
+test("front matter does not appear as a cell", () => {
+  const input = [
+    "# ---",
+    "# title: My Gallery",
+    "# ---",
+    '"""',
+    "# Docs",
+    '"""',
+    "",
+    "# %%",
+    "x = 1"
+  ].join("\n");
+  const result = parseSphinxGallery(input);
+  const allSrc = result.cells.map(c => c.source.join("")).join("");
+  assert.ok(!allSrc.includes("title: My Gallery"), "front matter must not appear in any cell");
+});
+
+test("no front matter → empty metadata", () => {
+  const input = '"""\nDocs.\n"""\n\n# %%\nx = 1\n';
+  const result = parseSphinxGallery(input);
+  assert.deepEqual(result.metadata, {});
+});

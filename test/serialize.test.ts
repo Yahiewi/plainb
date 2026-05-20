@@ -67,6 +67,13 @@ describe("toMystMd", () => {
     assert.ok(out.includes("---"));
   });
 
+  test("nested object metadata serialized as inline JSON", () => {
+    const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+    const nb = makeNotebook([codeCell("x = 1")], { kernelspec });
+    const out = toMystMd(nb);
+    assert.ok(out.includes('"name":"python3"') || out.includes('"name": "python3"'), "name must be JSON serialized");
+  });
+
   test("ends with newline", () => {
     const nb = makeNotebook([codeCell("x = 1")]);
     assert.ok(toMystMd(nb).endsWith("\n"));
@@ -121,6 +128,15 @@ describe("toMystMd", () => {
     assert.equal(nb2.metadata.kernelspec, "python3");
   });
 
+  test("round-trip: nested object metadata roundtrips correctly", () => {
+    const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+    const language_info = { name: "python", version: "3.11" };
+    const nb = makeNotebook([codeCell("x = 1")], { kernelspec, language_info });
+    const nb2 = parseMystMd(toMystMd(nb));
+    assert.deepEqual(nb2.metadata.kernelspec, kernelspec);
+    assert.deepEqual(nb2.metadata.language_info, language_info);
+  });
+
   test("empty notebook → just a newline", () => {
     const nb = makeNotebook([]);
     assert.equal(toMystMd(nb), "\n");
@@ -172,6 +188,28 @@ describe("toPy", () => {
   test("ends with newline", () => {
     const nb = makeNotebook([codeCell("x = 1")]);
     assert.ok(toPy(nb).endsWith("\n"));
+  });
+
+  test("notebook metadata → commented YAML front matter", () => {
+    const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+    const nb = makeNotebook([codeCell("x = 1")], { kernelspec });
+    const out = toPy(nb);
+    assert.ok(out.startsWith("# ---\n"), "must start with # ---");
+    assert.ok(out.includes("# kernelspec:"), "must contain commented kernelspec key");
+    assert.ok(out.includes("python3"), "kernelspec name must be present");
+  });
+
+  test("round-trip: nested metadata preserved through toPy/parsePy", () => {
+    const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+    const nb = makeNotebook([codeCell("x = 1")], { kernelspec });
+    const nb2 = parsePy(toPy(nb));
+    assert.deepEqual(nb2.metadata.kernelspec, kernelspec);
+  });
+
+  test("no metadata → no front matter block emitted", () => {
+    const nb = makeNotebook([codeCell("x = 1")]);
+    const out = toPy(nb);
+    assert.ok(!out.startsWith("# ---"), "no front matter for empty metadata");
   });
 
   // Round-trip tests
@@ -323,6 +361,21 @@ describe("toSphinxGallery", () => {
   test("ends with newline", () => {
     const nb = makeNotebook([codeCell("x = 1")]);
     assert.ok(toSphinxGallery(nb).endsWith("\n"));
+  });
+
+  test("notebook metadata → commented YAML front matter before docstring", () => {
+    const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+    const nb = makeNotebook([markdownCell("Docs."), codeCell("x = 1")], { kernelspec });
+    const out = toSphinxGallery(nb);
+    assert.ok(out.startsWith("# ---\n"), "must start with # ---");
+    assert.ok(out.includes("# kernelspec:"), "must contain commented kernelspec key");
+  });
+
+  test("round-trip: nested metadata preserved through toSphinxGallery/parseSphinxGallery", () => {
+    const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
+    const nb = makeNotebook([markdownCell("Docs."), codeCell("x = 1")], { kernelspec });
+    const nb2 = parseSphinxGallery(toSphinxGallery(nb));
+    assert.deepEqual(nb2.metadata.kernelspec, kernelspec);
   });
 
   // Round-trip tests
