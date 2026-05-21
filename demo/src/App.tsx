@@ -6,12 +6,7 @@ import { parsePy, parseClassicMd, parseMystMd, parseSphinxGallery } from 'plainb
 // Sample inputs
 // ---------------------------------------------------------------------------
 
-const PY_SAMPLE = `# ---
-# kernelspec: {"display_name": "Python 3", "name": "python3"}
-# language_info: {"name": "python"}
-# ---
-#
-# %% [markdown]
+const PY_SAMPLE = `# %% [markdown]
 # # My Notebook
 # Welcome to **plainb** — a lightweight text-to-notebook converter.
 
@@ -63,8 +58,7 @@ plt.show()
 `
 
 const MYST_SAMPLE = `---
-kernelspec: {"display_name": "Python 3", "name": "python3"}
-language_info: {"name": "python"}
+kernelspec: python3
 ---
 
 # My Notebook
@@ -92,11 +86,7 @@ plt.show()
 \`\`\`
 `
 
-const SG_SAMPLE = `# ---
-# kernelspec: {"display_name": "Python 3", "name": "python3"}
-# language_info: {"name": "python"}
-# ---
-"""
+const SG_SAMPLE = `"""
 ==============================
 Probability Calibration curves
 ==============================
