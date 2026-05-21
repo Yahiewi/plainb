@@ -70,6 +70,16 @@ describe("parseClassicMd", () => {
     assert.deepEqual(cell.outputs, []);
     assert.equal(cell.execution_count, null);
   });
+
+  test("strips and parses notebook frontmatter", () => {
+    const kernelspec = { name: "xpython", display_name: "Python 3.13 (XPython)", language: "python" };
+    const text = `---\nkernelspec: ${JSON.stringify(kernelspec)}\n---\n# Hello\n\nSome text.`;
+    const nb = parseClassicMd(text);
+    assert.deepEqual(nb.metadata.kernelspec, kernelspec);
+    assert.equal(nb.cells.length, 1);
+    assert.equal(nb.cells[0].cell_type, "markdown");
+    assert.ok(!nb.cells[0].source.join("").includes("kernelspec"));
+  });
 });
 
 // ---------------------------------------------------------------------------

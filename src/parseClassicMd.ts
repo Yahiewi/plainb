@@ -1,4 +1,5 @@
-import { codeCell, markdownCell, makeNotebook, type Cell, type Notebook } from "./notebook";
+import { codeCell, markdownCell, makeNotebook, type Cell, type Notebook } from "./notebook.js";
+import { parseFrontMatter } from "./utils.js";
 
 // ---------------------------------------------------------------------------
 // Classic markdown parser
@@ -18,6 +19,7 @@ export function parseClassicMd(text: string): Notebook {
   const lines = text.replace(/\r\n/g, "\n").split("\n");
   const cells: Cell[] = [];
   const used = new Set<string>();
+  let notebookMeta: Record<string, unknown> = {};
 
   const mdLines: string[] = [];
 
@@ -28,6 +30,19 @@ export function parseClassicMd(text: string): Notebook {
   }
 
   let i = 0;
+
+  // Strip and parse notebook-level front matter (---...---) if present
+  if (lines[0] === "---") {
+    i = 1;
+    const fmLines: string[] = [];
+    while (i < lines.length && lines[i] !== "---") {
+      fmLines.push(lines[i]);
+      i++;
+    }
+    i++; // skip closing ---
+    notebookMeta = parseFrontMatter(fmLines);
+  }
+
   while (i < lines.length) {
     const line = lines[i];
     const fenceMatch = line.match(OPENING_FENCE_RE);
@@ -57,5 +72,6 @@ export function parseClassicMd(text: string): Notebook {
   }
 
   flushMarkdown();
-  return makeNotebook(cells);
+  return makeNotebook(cells, notebookMeta);
 }
+

@@ -87,9 +87,11 @@ function stripLeadingBlank(lines: string[]): string[] {
 
 /** Extract the module-level triple-quoted docstring. */
 function extractDocstring(lines: string[]): { content: string; end: number } | null {
-  if (!lines[0]?.startsWith('"""')) return null;
+  const first = lines[0] ?? "";
+  const isRaw = first.startsWith('r"""');
+  if (!first.startsWith('"""') && !isRaw) return null;
 
-  const afterOpen = lines[0].slice(3);
+  const afterOpen = isRaw ? first.slice(4) : first.slice(3);
   const sameLineClose = afterOpen.indexOf('"""');
   if (sameLineClose >= 0) {
     return { content: afterOpen.slice(0, sameLineClose), end: 1 };
@@ -111,7 +113,7 @@ function extractDocstring(lines: string[]): { content: string; end: number } | n
 // Main parser
 // ---------------------------------------------------------------------------
 
-const DELIMITER_RE = /^# %%(.*)$/;
+const DELIMITER_RE = /^(?:#\s*%%(.*)|#{20,}.*)$/;
 
 export function parseSphinxGallery(text: string): Notebook {
   const lines = text.replace(/\r\n/g, "\n").split("\n");
@@ -143,13 +145,17 @@ export function parseSphinxGallery(text: string): Notebook {
     i += ds.end;
   }
 
-  // 2. Skip lines before first # %% (authors, SPDX, blanks)
-  while (i < lines.length && !DELIMITER_RE.test(lines[i])) i++;
-
-  // 3. Collect delimiter positions
+  // 2. Collect delimiter positions
   const delimiters: number[] = [];
-  for (let j = i; j < lines.length; j++) {
-    if (DELIMITER_RE.test(lines[j])) delimiters.push(j);
+  if (lines.some(line => DELIMITER_RE.test(line))) {
+    // Skip lines before first # %% (authors, SPDX, blanks)
+    while (i < lines.length && !DELIMITER_RE.test(lines[i])) i++;
+    for (let j = i; j < lines.length; j++) {
+      if (DELIMITER_RE.test(lines[j])) delimiters.push(j);
+    }
+  } else if (i < lines.length) {
+    // No delimiters, but we have code/content left. Treat everything as one cell
+    delimiters.push(i - 1);
   }
 
   // 4. Process each section
