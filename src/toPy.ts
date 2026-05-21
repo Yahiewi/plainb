@@ -40,7 +40,7 @@ export function toPy(notebook: Notebook): string {
 
   if (Object.keys(notebook.metadata).length > 0) {
     const lines = Object.entries(notebook.metadata).map(([k, v]) => {
-      const valStr = typeof v === 'object' && v !== null ? JSON.stringify(v) : v;
+      const valStr = typeof v === "object" && v !== null ? JSON.stringify(v) : v;
       return `# ${k}: ${valStr}`;
     });
     parts.push(`# ---\n${lines.join("\n")}\n# ---`);

@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/notebook-link/plainb/compare/v1.2.0...v1.3.0) (2026-05-20)
+
+
+### Bug Fixes
+
+* Add build workflow ([#5](https://github.com/notebook-link/plainb/issues/5)) ([dde70f6](https://github.com/notebook-link/plainb/commit/dde70f6a45a481f91705ceb0ac9e6b6fbd7fcd9f))
+
+
+### Features
+
+* Add front matter metadata parsing for all formats ([#3](https://github.com/notebook-link/plainb/issues/3)) ([e2d3503](https://github.com/notebook-link/plainb/commit/e2d3503a186976abd1aaef96592505ae5001f831))
+
 # [1.2.0](https://github.com/notebook-link/plainb/compare/v1.1.0...v1.2.0) (2026-04-29)
 
 
