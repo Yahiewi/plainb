@@ -33,12 +33,7 @@ plt.title("Sine wave")
 plt.show()
 `
 
-const MD_SAMPLE = `---
-kernelspec: {"display_name": "Python 3", "name": "python3"}
-language_info: {"name": "python"}
----
-
-# My Notebook
+const MD_SAMPLE = `# My Notebook
 
 Welcome to **plainb** — a lightweight text-to-notebook converter.
 
