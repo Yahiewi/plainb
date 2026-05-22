@@ -6,7 +6,12 @@ import { parsePy, parseClassicMd, parseMystMd, parseSphinxGallery } from 'plainb
 // Sample inputs
 // ---------------------------------------------------------------------------
 
-const PY_SAMPLE = `# %% [markdown]
+const PY_SAMPLE = `# ---
+# kernelspec: {"display_name": "Python 3", "name": "python3"}
+# language_info: {"name": "python"}
+# ---
+#
+# %% [markdown]
 # # My Notebook
 # Welcome to **plainb** — a lightweight text-to-notebook converter.
 
@@ -28,7 +33,12 @@ plt.title("Sine wave")
 plt.show()
 `
 
-const MD_SAMPLE = `# My Notebook
+const MD_SAMPLE = `---
+kernelspec: {"display_name": "Python 3", "name": "python3"}
+language_info: {"name": "python"}
+---
+
+# My Notebook
 
 Welcome to **plainb** — a lightweight text-to-notebook converter.
 
@@ -53,7 +63,8 @@ plt.show()
 `
 
 const MYST_SAMPLE = `---
-kernelspec: python3
+kernelspec: {"display_name": "Python 3", "name": "python3"}
+language_info: {"name": "python"}
 ---
 
 # My Notebook
@@ -81,7 +92,11 @@ plt.show()
 \`\`\`
 `
 
-const SG_SAMPLE = `"""
+const SG_SAMPLE = `# ---
+# kernelspec: {"display_name": "Python 3", "name": "python3"}
+# language_info: {"name": "python"}
+# ---
+"""
 ==============================
 Probability Calibration curves
 ==============================

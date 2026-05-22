@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/notebook-link/plainb/compare/v1.3.0...v1.4.0) (2026-05-21)
+
+
+### Features
+
+* Add kernel spec metadata to example files ([#7](https://github.com/notebook-link/plainb/issues/7)) ([6cc9dbf](https://github.com/notebook-link/plainb/commit/6cc9dbfce25f548769a058fa5b4b00fe5c7ef073))
+
 # [1.3.0](https://github.com/notebook-link/plainb/compare/v1.2.0...v1.3.0) (2026-05-20)
 
 
