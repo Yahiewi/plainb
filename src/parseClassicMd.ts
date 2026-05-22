@@ -74,4 +74,3 @@ export function parseClassicMd(text: string): Notebook {
   flushMarkdown();
   return makeNotebook(cells, notebookMeta);
 }
-

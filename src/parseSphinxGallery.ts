@@ -147,7 +147,7 @@ export function parseSphinxGallery(text: string): Notebook {
 
   // 2. Collect delimiter positions
   const delimiters: number[] = [];
-  if (lines.some(line => DELIMITER_RE.test(line))) {
+  if (lines.some((line) => DELIMITER_RE.test(line))) {
     // Skip lines before first # %% (authors, SPDX, blanks)
     while (i < lines.length && !DELIMITER_RE.test(lines[i])) i++;
     for (let j = i; j < lines.length; j++) {
