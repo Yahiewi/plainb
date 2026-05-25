@@ -1,9 +1,8 @@
-import type { Notebook } from "./notebook";
+import type { Notebook } from "./notebook.js";
 
 // ---------------------------------------------------------------------------
 // Notebook → Classic Markdown serializer
 // ---------------------------------------------------------------------------
-
 function joinSource(source: string[]): string {
   return source.join("");
 }
@@ -21,6 +20,14 @@ function joinSource(source: string[]): string {
  */
 export function toClassicMd(notebook: Notebook, language = "python"): string {
   const parts: string[] = [];
+
+  if (notebook.metadata && Object.keys(notebook.metadata).length > 0) {
+    const lines = Object.entries(notebook.metadata).map(([k, v]) => {
+      const valStr = typeof v === "object" && v !== null ? JSON.stringify(v) : v;
+      return `${k}: ${valStr}`;
+    });
+    parts.push(`---\n${lines.join("\n")}\n---`);
+  }
 
   for (const cell of notebook.cells) {
     if (cell.cell_type === "markdown") {

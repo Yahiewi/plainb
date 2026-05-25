@@ -313,6 +313,22 @@ describe("toClassicMd", () => {
     assert.equal(nb2.cells[1].cell_type, "code");
     assert.equal(nb2.cells[2].cell_type, "markdown");
   });
+
+  test("notebook metadata → YAML front matter", () => {
+    const kernelspec = { name: "xpython", display_name: "Python 3", language: "python" };
+    const nb = makeNotebook([codeCell("x = 1")], { kernelspec });
+    const out = toClassicMd(nb);
+    assert.ok(out.startsWith("---\n"));
+    assert.ok(out.includes("kernelspec:"));
+    assert.ok(out.includes("xpython"));
+  });
+
+  test("round-trip: notebook metadata preserved", () => {
+    const kernelspec = { name: "xpython", display_name: "Python 3", language: "python" };
+    const nb = makeNotebook([codeCell("x = 1")], { kernelspec });
+    const nb2 = parseClassicMd(toClassicMd(nb));
+    assert.deepEqual(nb2.metadata.kernelspec, kernelspec);
+  });
 });
 
 // ---------------------------------------------------------------------------
