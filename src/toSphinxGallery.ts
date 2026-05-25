@@ -43,7 +43,8 @@ export function toSphinxGallery(notebook: Notebook): string {
   // First markdown cell → docstring
   if (cells[0]?.cell_type === "markdown") {
     const src = joinSource(cells[0].source);
-    parts.push(`"""\n${src}\n"""`);
+    const prefix = src.includes("\\") ? "r" : "";
+    parts.push(`${prefix}"""\n${src}\n"""`);
     i = 1;
   }
 
