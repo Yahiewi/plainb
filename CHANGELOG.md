@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/notebook-link/plainb/compare/v1.4.0...v1.5.0) (2026-05-25)
+
+
+### Features
+
+* Fix parsers and add tests ([#8](https://github.com/notebook-link/plainb/issues/8)) ([dbc34fd](https://github.com/notebook-link/plainb/commit/dbc34fd083b1e06c4d9140600e80630635abbc50))
+
 # [1.4.0](https://github.com/notebook-link/plainb/compare/v1.3.0...v1.4.0) (2026-05-21)
 
 
