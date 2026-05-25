@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/notebook-link/plainb/compare/v1.5.0...v1.6.0) (2026-05-25)
+
+
+### Features
+
+* Fix sphinx gallery serializing bug ([#9](https://github.com/notebook-link/plainb/issues/9)) ([252ed0e](https://github.com/notebook-link/plainb/commit/252ed0edb728657bdc5f32f39ac68977bd066a5d))
+
 # [1.5.0](https://github.com/notebook-link/plainb/compare/v1.4.0...v1.5.0) (2026-05-25)
 
 
