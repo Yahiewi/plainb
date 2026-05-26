@@ -1,4 +1,5 @@
 import type { Notebook } from "./notebook";
+import { stringifyYAML } from "./utils";
 
 // ---------------------------------------------------------------------------
 // Notebook → Python percent format serializer
@@ -39,11 +40,12 @@ export function toPy(notebook: Notebook): string {
   const parts: string[] = [];
 
   if (Object.keys(notebook.metadata).length > 0) {
-    const lines = Object.entries(notebook.metadata).map(([k, v]) => {
-      const valStr = typeof v === "object" && v !== null ? JSON.stringify(v) : v;
-      return `# ${k}: ${valStr}`;
-    });
-    parts.push(`# ---\n${lines.join("\n")}\n# ---`);
+    const yamlStr = stringifyYAML({ jupyter: notebook.metadata });
+    const commentedYaml = yamlStr
+      .split("\n")
+      .map((line) => (line === "" ? "#" : `# ${line}`))
+      .join("\n");
+    parts.push(`# ---\n${commentedYaml}\n# ---`);
   }
 
   for (const cell of notebook.cells) {

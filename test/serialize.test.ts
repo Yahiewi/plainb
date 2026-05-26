@@ -67,11 +67,12 @@ describe("toMystMd", () => {
     assert.ok(out.includes("---"));
   });
 
-  test("nested object metadata serialized as inline JSON", () => {
+  test("nested object metadata serialized as YAML", () => {
     const kernelspec = { name: "python3", display_name: "Python 3", language: "python" };
     const nb = makeNotebook([codeCell("x = 1")], { kernelspec });
     const out = toMystMd(nb);
-    assert.ok(out.includes('"name":"python3"') || out.includes('"name": "python3"'), "name must be JSON serialized");
+    assert.ok(out.includes("kernelspec:"), "kernelspec key must be present");
+    assert.ok(out.includes("name: python3"), "name must be present under kernelspec");
   });
 
   test("ends with newline", () => {
@@ -195,7 +196,8 @@ describe("toPy", () => {
     const nb = makeNotebook([codeCell("x = 1")], { kernelspec });
     const out = toPy(nb);
     assert.ok(out.startsWith("# ---\n"), "must start with # ---");
-    assert.ok(out.includes("# kernelspec:"), "must contain commented kernelspec key");
+    assert.ok(out.includes("# jupyter:"), "must contain commented jupyter namespace key");
+    assert.ok(out.includes("kernelspec:"), "must contain kernelspec key");
     assert.ok(out.includes("python3"), "kernelspec name must be present");
   });
 
@@ -384,7 +386,8 @@ describe("toSphinxGallery", () => {
     const nb = makeNotebook([markdownCell("Docs."), codeCell("x = 1")], { kernelspec });
     const out = toSphinxGallery(nb);
     assert.ok(out.startsWith("# ---\n"), "must start with # ---");
-    assert.ok(out.includes("# kernelspec:"), "must contain commented kernelspec key");
+    assert.ok(out.includes("# jupyter:"), "must contain commented jupyter namespace key");
+    assert.ok(out.includes("kernelspec:"), "must contain kernelspec key");
   });
 
   test("round-trip: nested metadata preserved through toSphinxGallery/parseSphinxGallery", () => {
