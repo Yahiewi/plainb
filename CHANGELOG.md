@@ -1,3 +1,15 @@
+# [1.7.0](https://github.com/notebook-link/plainb/compare/v1.6.0...v1.7.0) (2026-05-26)
+
+
+### Bug Fixes
+
+* Lint ([#13](https://github.com/notebook-link/plainb/issues/13)) ([ad722a1](https://github.com/notebook-link/plainb/commit/ad722a1715e05c2ada7025d111631637a143d786))
+
+
+### Features
+
+* Make front matter metadata jupytext compatible ([#10](https://github.com/notebook-link/plainb/issues/10)) ([9fc3db9](https://github.com/notebook-link/plainb/commit/9fc3db91b074d2831224ecbf05fedd7d0e736af6))
+
 # [1.6.0](https://github.com/notebook-link/plainb/compare/v1.5.0...v1.6.0) (2026-05-25)
 
 
