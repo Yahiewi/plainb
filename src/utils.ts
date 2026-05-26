@@ -11,13 +11,11 @@ type YAMLObject = Record<string, unknown>;
 export function parseFrontMatter(yamlLines: string[]): YAMLObject {
   const root: YAMLObject = {};
   // Stack contains objects and their indentation level
-  const stack: { indent: number; obj: YAMLObject }[] = [
-    { indent: -1, obj: root }
-  ];
+  const stack: { indent: number; obj: YAMLObject }[] = [{ indent: -1, obj: root }];
 
   for (const rawLine of yamlLines) {
     const trimmed = rawLine.trimEnd();
-    if (!trimmed || trimmed.trim().startsWith('#')) {
+    if (!trimmed || trimmed.trim().startsWith("#")) {
       continue; // skip blank lines and comments
     }
 
@@ -46,17 +44,20 @@ export function parseFrontMatter(yamlLines: string[]): YAMLObject {
       stack.push({ indent, obj: newObj });
     } else {
       let parsedVal: unknown = valueStr;
-      if ((valueStr.startsWith('"') && valueStr.endsWith('"')) || (valueStr.startsWith("'") && valueStr.endsWith("'"))) {
+      if (
+        (valueStr.startsWith('"') && valueStr.endsWith('"')) ||
+        (valueStr.startsWith("'") && valueStr.endsWith("'"))
+      ) {
         parsedVal = valueStr.slice(1, -1);
-      } else if (valueStr.startsWith('[') && valueStr.endsWith(']')) {
+      } else if (valueStr.startsWith("[") && valueStr.endsWith("]")) {
         try {
           parsedVal = JSON.parse(valueStr);
         } catch {
           // Flow array fallback: split by comma and clean quotes
           parsedVal = valueStr
             .slice(1, -1)
-            .split(',')
-            .map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+            .split(",")
+            .map((s) => s.trim().replace(/^['"]|['"]$/g, ""));
         }
       } else {
         try {
@@ -89,7 +90,7 @@ export function stringifyYAML(obj: YAMLObject, depth = 0): string {
       continue;
     }
     if (Array.isArray(val)) {
-      const items = val.map(item => JSON.stringify(item)).join(", ");
+      const items = val.map((item) => JSON.stringify(item)).join(", ");
       lines.push(`${indent}${key}: [${items}]`);
     } else if (val && typeof val === "object") {
       lines.push(`${indent}${key}:`);
