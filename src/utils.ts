@@ -8,7 +8,7 @@ type YAMLObject = Record<string, unknown>;
  * Parse a multiline YAML frontmatter string array into a nested object structure.
  * Uses jupyter namespace for compatibility with Jupytext metadata format.
  */
-export function parseFrontMatter(yamlLines: string[]): Record<string, unknown> {
+export function parseFrontMatter(yamlLines: string[]): YAMLObject {
   const root: YAMLObject = {};
   // Stack contains objects and their indentation level
   const stack: { indent: number; obj: YAMLObject }[] = [
@@ -45,7 +45,7 @@ export function parseFrontMatter(yamlLines: string[]): Record<string, unknown> {
       currentParent[key] = newObj;
       stack.push({ indent, obj: newObj });
     } else {
-      let parsedVal: any = valueStr;
+      let parsedVal: unknown = valueStr;
       if ((valueStr.startsWith('"') && valueStr.endsWith('"')) || (valueStr.startsWith("'") && valueStr.endsWith("'"))) {
         parsedVal = valueStr.slice(1, -1);
       } else if (valueStr.startsWith('[') && valueStr.endsWith(']')) {
@@ -71,7 +71,7 @@ export function parseFrontMatter(yamlLines: string[]): Record<string, unknown> {
 
   // Return the nested `jupyter` namespace directly if present, otherwise the root object
   if (root.jupyter && typeof root.jupyter === "object") {
-    return root.jupyter as Record<string, unknown>;
+    return root.jupyter as YAMLObject;
   }
 
   return root;
@@ -80,7 +80,7 @@ export function parseFrontMatter(yamlLines: string[]): Record<string, unknown> {
 /**
  * Serialize a nested dictionary/object structure to an indentation-based YAML string.
  */
-export function stringifyYAML(obj: Record<string, any>, depth = 0): string {
+export function stringifyYAML(obj: YAMLObject, depth = 0): string {
   const indent = "  ".repeat(depth);
   const lines: string[] = [];
 
@@ -93,7 +93,7 @@ export function stringifyYAML(obj: Record<string, any>, depth = 0): string {
       lines.push(`${indent}${key}: [${items}]`);
     } else if (val && typeof val === "object") {
       lines.push(`${indent}${key}:`);
-      const nested = stringifyYAML(val, depth + 1);
+      const nested = stringifyYAML(val as YAMLObject, depth + 1);
       if (nested) {
         lines.push(nested);
       }
