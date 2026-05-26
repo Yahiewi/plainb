@@ -135,6 +135,11 @@ export function parseSphinxGallery(text: string): Notebook {
     notebookMeta = parseFrontMatter(fmLines);
   }
 
+  // Skip any leading empty lines before checking for docstring
+  while (i < lines.length && lines[i].trim() === "") {
+    i++;
+  }
+
   // 1. Module docstring → first markdown cell
   const ds = extractDocstring(lines.slice(i));
   if (ds) {
