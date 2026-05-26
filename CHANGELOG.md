@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/notebook-link/plainb/compare/v1.7.0...v1.7.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* Fix Sphinx docstring parsing ([#14](https://github.com/notebook-link/plainb/issues/14)) ([90d45c8](https://github.com/notebook-link/plainb/commit/90d45c8fe60fad275e0d857a80e83829cf762e3c))
+
 # [1.7.0](https://github.com/notebook-link/plainb/compare/v1.6.0...v1.7.0) (2026-05-26)
 
 
