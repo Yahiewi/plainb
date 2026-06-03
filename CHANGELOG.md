@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/notebook-link/plainb/compare/v1.7.1...v1.8.0) (2026-06-03)
+
+
+### Features
+
+* Add plaintext format detection ([#15](https://github.com/notebook-link/plainb/issues/15)) ([90f6f7d](https://github.com/notebook-link/plainb/commit/90f6f7d85ea133a77c46cd09115a83da4d787f12))
+
 ## [1.7.1](https://github.com/notebook-link/plainb/compare/v1.7.0...v1.7.1) (2026-05-26)
 
 

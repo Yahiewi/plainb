@@ -1,6 +1,6 @@
 {
   "name": "plainb",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "Convert plain text (.py percent format, .md classic/MyST) to Jupyter nbformat 4 JSON",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
