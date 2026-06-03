@@ -102,6 +102,7 @@ export function detectPy(text: string): "percent" | "sphinx-gallery" {
   const parser = new StringParser();
   let doublePercent = 0;
   let twentyHash = 0;
+  let hasPercentMd = false;
 
   for (const line of lines) {
     parser.readLine(line);
@@ -110,10 +111,19 @@ export function detectPy(text: string): "percent" | "sphinx-gallery" {
     }
     if (DOUBLE_PERCENT_RE.test(line)) {
       doublePercent++;
+      if (/# %%\s*\[(markdown|md|raw)\]/i.test(line)) {
+        hasPercentMd = true;
+      }
     }
     if (TWENTY_HASH_RE.test(line)) {
       twentyHash++;
     }
+  }
+
+  // A Sphinx Gallery script starts with a module docstring, and separates
+  // cells using either twenty hashes or `# %%` without percent-format cell tags.
+  if (hasLeadingDocstring(lines) && !hasPercentMd) {
+    return "sphinx-gallery";
   }
 
   if (doublePercent >= 1) {
@@ -122,7 +132,7 @@ export function detectPy(text: string): "percent" | "sphinx-gallery" {
   if (twentyHash >= 2) {
     return "sphinx-gallery";
   }
-  return hasLeadingDocstring(lines) ? "sphinx-gallery" : "percent";
+  return "percent";
 }
 
 /**

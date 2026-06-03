@@ -47,6 +47,16 @@ describe("detectPy", () => {
   test("a single hash run is not enough for sphinx", () => {
     assert.equal(detectPy("####################\nimport os\nx = 1"), "percent");
   });
+
+  test("leading docstring + `# %%` cell separators → sphinx-gallery", () => {
+    const text = '"""\nLeading docstring\n"""\n# %%\nx = 1\n# %%\ny = 2';
+    assert.equal(detectPy(text), "sphinx-gallery");
+  });
+
+  test("leading docstring + `# %% [markdown]` → percent", () => {
+    const text = '"""\nLeading docstring\n"""\n# %% [markdown]\n# Some text\n# %%\nx = 1';
+    assert.equal(detectPy(text), "percent");
+  });
 });
 
 // ---------------------------------------------------------------------------

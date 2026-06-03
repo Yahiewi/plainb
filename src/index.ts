@@ -15,10 +15,11 @@ import { parseMd } from "./parseMd";
 import { parseClassicMd } from "./parseClassicMd";
 import { parseMystMd } from "./parseMystMd";
 import { parseSphinxGallery } from "./parseSphinxGallery";
-import { detectFormat } from "./detect";
 import { toPy } from "./toPy";
+import { toClassicMd } from "./toClassicMd";
 import { toMystMd } from "./toMystMd";
 import { toSphinxGallery } from "./toSphinxGallery";
+import type { PlainbFormat } from "./detect";
 import type { Notebook } from "./notebook";
 
 /**
@@ -48,13 +49,13 @@ export function serialize(notebook: Notebook, format: "py" | "md" | "sphinx-gall
 }
 
 /**
- * Parse a file by auto-detecting its format from the text and extension.
+ * Parse a file given its detected {@link PlainbFormat}.
  *
  * @param text - the file contents
- * @param ext - the file extension, with or without a leading dot (e.g. ".py")
+ * @param format - the format returned by {@link detectFormat}
  */
-export function parseAuto(text: string, ext: string): Notebook {
-  switch (detectFormat(text, ext)) {
+export function parseFormat(text: string, format: PlainbFormat): Notebook {
+  switch (format) {
     case "percent":
       return parsePy(text);
     case "sphinx-gallery":
@@ -63,5 +64,24 @@ export function parseAuto(text: string, ext: string): Notebook {
       return parseMystMd(text);
     case "classic":
       return parseClassicMd(text);
+  }
+}
+
+/**
+ * Serialize a notebook to a given {@link PlainbFormat}.
+ *
+ * @param notebook - the notebook to serialize
+ * @param format - the target format
+ */
+export function serializeFormat(notebook: Notebook, format: PlainbFormat): string {
+  switch (format) {
+    case "percent":
+      return toPy(notebook);
+    case "sphinx-gallery":
+      return toSphinxGallery(notebook);
+    case "myst":
+      return toMystMd(notebook);
+    case "classic":
+      return toClassicMd(notebook);
   }
 }
