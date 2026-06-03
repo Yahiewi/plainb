@@ -24,7 +24,7 @@ import type { Notebook } from "./notebook";
 
 /**
  * Parse a file by explicitly providing the format.
- * 
+ *
  * @param text - the file contents
  * @param format - the format of the file, "py", "md", or "sphinx-gallery"
  */
@@ -37,7 +37,7 @@ export function parse(text: string, format: "py" | "md" | "sphinx-gallery"): Not
 
 /**
  * Serialize a notebook to a file by explicitly providing the format.
- * 
+ *
  * @param notebook - the notebook to serialize
  * @param format - the format to serialize to, "py", "md", or "sphinx-gallery"
  */

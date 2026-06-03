@@ -45,10 +45,7 @@ class StringParser {
         continue;
       }
       // Triple quote start or end.
-      if (
-        i >= this.tripleStart + 3 &&
-        line.slice(i - 2, i + 1) === char.repeat(3)
-      ) {
+      if (i >= this.tripleStart + 3 && line.slice(i - 2, i + 1) === char.repeat(3)) {
         if (this.triple === char) {
           this.triple = null;
           this.tripleStart = i;
@@ -87,10 +84,7 @@ function hasLeadingDocstring(lines: string[]): boolean {
     i++; // skip the closing delimiter
   }
   // A module docstring may only be preceded by blank lines and comments.
-  while (
-    i < lines.length &&
-    (lines[i].trim() === "" || lines[i].trimStart().startsWith("#"))
-  ) {
+  while (i < lines.length && (lines[i].trim() === "" || lines[i].trimStart().startsWith("#"))) {
     i++;
   }
   return /^[rbuf]*("""|''')/i.test((lines[i] ?? "").trimStart());
