@@ -196,6 +196,7 @@ export function stringifyYAML(obj: YAMLObject, depth = 0): string {
     } else if (typeof val === "string") {
       const isNumeric = !isNaN(Number(val)) && !isNaN(parseFloat(val));
       const isBoolOrNull = val === "true" || val === "false" || val === "null";
+      // eslint-disable-next-line no-control-regex
       const hasNonAscii = /[^\x00-\x7F]/.test(val);
       if (hasNonAscii) {
         lines.push(`${indent}${key}: ${escapeNonAsciiYAML(val)}`);
