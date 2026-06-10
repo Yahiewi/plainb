@@ -61,7 +61,7 @@ function parseCellHeader(rest: string): CellHeader {
       const key = match[1];
       const valStr = match[2];
       remaining = remaining.replace(match[0], "");
-      
+
       let parsedVal: unknown;
       const strippedVal = valStr.replace(/^['"]|['"]$/g, "");
       try {

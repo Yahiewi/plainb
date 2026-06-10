@@ -26,9 +26,9 @@ function preprocessYamlLines(yamlLines: string[]): string[] {
     for (let c = 0; c < currentLine.length; c++) {
       const char = currentLine[c];
       const prevChar = currentLine[c - 1] ?? "";
-      if (char === '"' && prevChar !== '\\' && !inSingleQuotes) {
+      if (char === '"' && prevChar !== "\\" && !inSingleQuotes) {
         inDoubleQuotes = !inDoubleQuotes;
-      } else if (char === "'" && prevChar !== '\\' && !inDoubleQuotes) {
+      } else if (char === "'" && prevChar !== "\\" && !inDoubleQuotes) {
         inSingleQuotes = !inSingleQuotes;
       } else if (!inDoubleQuotes && !inSingleQuotes) {
         if (char === "[") {
@@ -78,7 +78,7 @@ function escapeNonAsciiYAML(str: string): string {
         result += "\\u" + code.toString(16).padStart(4, "0").toUpperCase();
       }
     } else {
-      if (char === '"' || char === '\\') {
+      if (char === '"' || char === "\\") {
         result += "\\" + char;
       } else {
         result += char;
@@ -177,15 +177,17 @@ export function stringifyYAML(obj: YAMLObject, depth = 0): string {
       continue;
     }
     if (Array.isArray(val)) {
-      const items = val.map((item) => {
-        if (typeof item === "string") {
-          if (/^[a-zA-Z0-9_-]+$/.test(item)) {
-            return item;
+      const items = val
+        .map((item) => {
+          if (typeof item === "string") {
+            if (/^[a-zA-Z0-9_-]+$/.test(item)) {
+              return item;
+            }
+            return escapeNonAsciiYAML(item);
           }
-          return escapeNonAsciiYAML(item);
-        }
-        return JSON.stringify(item);
-      }).join(", ");
+          return JSON.stringify(item);
+        })
+        .join(", ");
       lines.push(`${indent}${key}: [${items}]`);
     } else if (val && typeof val === "object") {
       lines.push(`${indent}${key}:`);
@@ -252,7 +254,7 @@ export function cleanCellMetadata(meta: Record<string, unknown>): Record<string,
     "execution",
     "heading_collapsed",
     "jp-MarkdownHeadingCollapsed",
-    "user_expressions"
+    "user_expressions",
   ];
   for (const key of keysToFilter) {
     delete clean[key];

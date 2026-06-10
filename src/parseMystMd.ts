@@ -54,7 +54,6 @@ function substituteInlineRoles(line: string): string {
   return line;
 }
 
-
 function stripTrailingBlank(lines: string[]): string[] {
   let end = lines.length;
   while (end > 0 && lines[end - 1].trim() === "") end--;

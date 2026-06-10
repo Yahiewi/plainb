@@ -23,12 +23,14 @@ function isSimpleMetadata(meta: Record<string, unknown>): boolean {
 function serializeCompactOptions(meta: Record<string, unknown>): string[] {
   return Object.entries(meta).map(([key, val]) => {
     if (Array.isArray(val)) {
-      const items = val.map((item) => {
-        if (typeof item === "string" && /^[a-zA-Z0-9_-]+$/.test(item)) {
-          return item;
-        }
-        return JSON.stringify(item);
-      }).join(", ");
+      const items = val
+        .map((item) => {
+          if (typeof item === "string" && /^[a-zA-Z0-9_-]+$/.test(item)) {
+            return item;
+          }
+          return JSON.stringify(item);
+        })
+        .join(", ");
       return `:${key}: [${items}]`;
     }
     if (typeof val === "string") {
