@@ -1,5 +1,5 @@
 import type { Notebook } from "./notebook";
-import { stringifyYAML } from "./utils";
+import { stringifyYAML, pythonStyleJSON, cleanCellMetadata } from "./utils";
 
 // ---------------------------------------------------------------------------
 // Notebook → MyST Markdown serializer
@@ -9,10 +9,33 @@ function joinSource(source: string[]): string {
   return source.join("");
 }
 
-function serializeOptions(meta: Record<string, unknown>): string[] {
-  return Object.entries(meta).map(([key, val]) =>
-    typeof val === "string" ? `:${key}: ${val}` : `:${key}: ${JSON.stringify(val)}`,
-  );
+/** Check if metadata has nested objects (not simple). */
+function isSimpleMetadata(meta: Record<string, unknown>): boolean {
+  for (const val of Object.values(meta)) {
+    if (val && typeof val === "object" && !Array.isArray(val)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** Serialize flat keys to MyST compact colon shorthand. */
+function serializeCompactOptions(meta: Record<string, unknown>): string[] {
+  return Object.entries(meta).map(([key, val]) => {
+    if (Array.isArray(val)) {
+      const items = val.map((item) => {
+        if (typeof item === "string" && /^[a-zA-Z0-9_-]+$/.test(item)) {
+          return item;
+        }
+        return JSON.stringify(item);
+      }).join(", ");
+      return `:${key}: [${items}]`;
+    }
+    if (typeof val === "string") {
+      return `:${key}: ${val}`;
+    }
+    return `:${key}: ${JSON.stringify(val)}`;
+  });
 }
 
 /**
@@ -32,10 +55,11 @@ export function toMystMd(notebook: Notebook): string {
   }
 
   for (const cell of notebook.cells) {
+    const cleanMeta = cleanCellMetadata(cell.metadata);
     if (cell.cell_type === "markdown") {
-      const hasMeta = Object.keys(cell.metadata).length > 0;
+      const hasMeta = Object.keys(cleanMeta).length > 0;
       if (parts.length > 0 || hasMeta) {
-        const metaStr = hasMeta ? ` ${JSON.stringify(cell.metadata)}` : "";
+        const metaStr = hasMeta ? ` ${pythonStyleJSON(cleanMeta)}` : "";
         parts.push(`+++${metaStr}`);
       }
       const src = joinSource(cell.source);
@@ -43,9 +67,21 @@ export function toMystMd(notebook: Notebook): string {
     } else {
       const directive = cell.cell_type === "code" ? "code-cell" : "raw-cell";
       const lines: string[] = [`\`\`\`{${directive}}`];
-      const optionLines = serializeOptions(cell.metadata);
-      lines.push(...optionLines);
-      if (optionLines.length > 0) lines.push("");
+
+      const hasMeta = Object.keys(cleanMeta).length > 0;
+      if (hasMeta) {
+        if (isSimpleMetadata(cleanMeta)) {
+          const optionLines = serializeCompactOptions(cleanMeta);
+          lines.push(...optionLines);
+          lines.push("");
+        } else {
+          const yamlStr = stringifyYAML(cleanMeta);
+          lines.push("---");
+          lines.push(yamlStr);
+          lines.push("---");
+        }
+      }
+
       const src = joinSource(cell.source);
       if (src) lines.push(src);
       lines.push("```");

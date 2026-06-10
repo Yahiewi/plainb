@@ -92,6 +92,68 @@ plt.show()
 \`\`\`
 `
 
+const VARIABLES_MYST_SAMPLE = `---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+kernelspec:
+  display_name: C++17
+  language: C++17
+  name: xcpp17
+learning:
+  objectives:
+    apply: [variable, "d\\xE9claration de variable", affectation]
+  prerequisites:
+    apply: [valeur, "op\\xE9ration", expression, "expression bool\\xE9enne", type, entier,
+      "r\\xE9el", "caract\\xE8re", "bool\\xE9en"]
+---
+
++++ {"nbgrader": {"grade": false, "grade_id": "cell-b78562ee2ff6d72c", "locked": true, "schema_version": 3, "solution": false}}
+
+# TP : variables et affectations
+
+Dans la feuille précédente, nous avons effectué des calculs et observé
+les résultats (type, valeur). Pour écrire des programmes, nous aurons
+besoin de **stocker les résultats intermédiaires dans des variables**
+pour en réutiliser les valeurs.
+
+## Exercice 1
+
+- Exécutez la cellule suivante :
+
+\`\`\`{code-cell}
+int a;
+a = 3;
+\`\`\`
+
++++ {"nbgrader": {"grade": false, "grade_id": "cell-77b23801c7675aeb", "locked": true, "schema_version": 3, "solution": false}}
+
+Une fois que la variable \`a\` a été ***déclarée*** (\`int a;\`) et qu'on
+lui a ***affecté*** une valeur (\`a = 3\`), on peut afficher ou
+réutiliser cette valeur :
+
+\`\`\`{code-cell}
+---
+nbgrader:
+  grade: false
+  grade_id: cell-cb019a2142f5c180
+  locked: true
+  schema_version: 3
+  solution: false
+  task: false
+---
+a
+\`\`\`
+
+\`\`\`{code-cell}
+:locked: false
+
+a + 1
+\`\`\`
+`
+
 const SG_SAMPLE = `# ---
 # kernelspec: {"display_name": "Python 3", "name": "python3"}
 # language_info: {"name": "python"}
@@ -172,6 +234,7 @@ const INPUT_LANGUAGE: Record<Format, string> = {
   py: 'python',
   md: 'markdown',
   myst: 'markdown',
+  myst_vars: 'markdown',
   sg: 'python',
 }
 
@@ -179,10 +242,23 @@ const INPUT_LANGUAGE: Record<Format, string> = {
 // App
 // ---------------------------------------------------------------------------
 
-type Format = 'py' | 'md' | 'myst' | 'sg'
+type Format = 'py' | 'md' | 'myst' | 'myst_vars' | 'sg'
 
-const SAMPLES: Record<Format, string> = { py: PY_SAMPLE, md: MD_SAMPLE, myst: MYST_SAMPLE, sg: SG_SAMPLE }
-const LABELS: Record<Format, string> = { py: '.py percent', md: '.md classic', myst: '.md MyST', sg: 'sphinx-gallery' }
+const SAMPLES: Record<Format, string> = {
+  py: PY_SAMPLE,
+  md: MD_SAMPLE,
+  myst: MYST_SAMPLE,
+  myst_vars: VARIABLES_MYST_SAMPLE,
+  sg: SG_SAMPLE
+}
+
+const LABELS: Record<Format, string> = {
+  py: '.py percent',
+  md: '.md classic',
+  myst: '.md MyST (simple)',
+  myst_vars: '.md MyST (variables)',
+  sg: 'sphinx-gallery'
+}
 
 export default function App() {
   const [format, setFormat] = useState<Format>('py')

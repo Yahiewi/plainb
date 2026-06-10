@@ -6,7 +6,7 @@ import {
   type Cell,
   type Notebook,
 } from "./notebook";
-import { parseFrontMatter } from "./utils";
+import { parseYAMLBlock } from "./utils";
 
 // ---------------------------------------------------------------------------
 // Percent format parser
@@ -37,21 +37,46 @@ function parseCellHeader(rest: string): CellHeader {
     s = s.replace(TYPE_TAG_RE, "").trim();
   }
 
-  const metadata: Record<string, unknown> = {};
+  let metadata: Record<string, unknown> = {};
 
-  // Parse tags="[...]" or tags=['...']
-  const tagsMatch = s.match(/\btags\s*=\s*(['"])\[(.+?)\]\1/);
-  if (tagsMatch) {
+  const firstCurly = s.indexOf("{");
+  const firstEqual = s.indexOf("=");
+
+  if (firstCurly >= 0 && (firstEqual < 0 || firstCurly < firstEqual)) {
+    const jsonStr = s.slice(firstCurly);
+    const titleStr = s.slice(0, firstCurly).trim();
     try {
-      metadata.tags = JSON.parse("[" + tagsMatch[2] + "]");
+      metadata = JSON.parse(jsonStr);
     } catch {
-      // ignore malformed tags
+      // ignore
     }
-    s = s.replace(tagsMatch[0], "").trim();
+    if (titleStr) {
+      metadata.name = titleStr;
+    }
+  } else {
+    const kvRegex = /\b([\w-]+)=("[^"]*"|'[^']*'|\[[^\]]*\]|\S+)/g;
+    const matches = Array.from(s.matchAll(kvRegex));
+    let remaining = s;
+    for (const match of matches) {
+      const key = match[1];
+      const valStr = match[2];
+      remaining = remaining.replace(match[0], "");
+      
+      let parsedVal: unknown;
+      const strippedVal = valStr.replace(/^['"]|['"]$/g, "");
+      try {
+        const normVal = strippedVal.replace(/'/g, '"');
+        parsedVal = JSON.parse(normVal);
+      } catch {
+        parsedVal = strippedVal;
+      }
+      metadata[key] = parsedVal;
+    }
+    const nameStr = remaining.replace(/\s+/g, " ").trim();
+    if (nameStr) {
+      metadata.name = nameStr;
+    }
   }
-
-  // Remaining text is the cell title/name
-  if (s) metadata.name = s;
 
   return { cellType, metadata };
 }
@@ -99,7 +124,7 @@ export function parsePy(text: string): Notebook {
       i++;
     }
     i++; // skip closing # ---
-    notebookMeta = parseFrontMatter(fmLines);
+    notebookMeta = parseYAMLBlock(fmLines);
   }
 
   // Find all delimiter positions

@@ -1,5 +1,5 @@
 import type { Notebook } from "./notebook";
-import { stringifyYAML } from "./utils";
+import { stringifyYAML, pythonStyleJSON, cleanCellMetadata } from "./utils";
 
 // ---------------------------------------------------------------------------
 // Notebook → Python percent format serializer
@@ -17,14 +17,56 @@ function commentLines(text: string): string {
     .join("\n");
 }
 
+function isSimpleMetadata(meta: Record<string, unknown>): boolean {
+  for (const val of Object.values(meta)) {
+    if (val && typeof val === "object" && !Array.isArray(val)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function buildDelimiter(cellType: string, meta: Record<string, unknown>): string {
   const parts: string[] = ["# %%"];
   if (cellType === "markdown") parts.push("[markdown]");
   else if (cellType === "raw") parts.push("[raw]");
-  if (typeof meta.name === "string" && meta.name) parts.push(meta.name);
-  if (Array.isArray(meta.tags) && meta.tags.length > 0) {
-    parts.push(`tags='${JSON.stringify(meta.tags)}'`);
+
+  const cleanMeta = { ...meta };
+  delete cleanMeta.cell_marker;
+
+  let cellName = "";
+  if (typeof cleanMeta.name === "string" && cleanMeta.name) {
+    cellName = cleanMeta.name;
+    delete cleanMeta.name;
+  } else if (typeof cleanMeta.title === "string" && cleanMeta.title) {
+    cellName = cleanMeta.title;
+    delete cleanMeta.title;
   }
+
+  if (cellName) {
+    parts.push(cellName);
+  }
+
+  if (Object.keys(cleanMeta).length > 0) {
+    if (isSimpleMetadata(cleanMeta)) {
+      const optStr = Object.entries(cleanMeta)
+        .map(([key, val]) => {
+          if (typeof val === "string") {
+            return `${key}=${JSON.stringify(val)}`;
+          }
+          if (Array.isArray(val)) {
+            const items = val.map((item) => JSON.stringify(item)).join(", ");
+            return `${key}=[${items}]`;
+          }
+          return `${key}=${JSON.stringify(val)}`;
+        })
+        .join(" ");
+      parts.push(optStr);
+    } else {
+      parts.push(pythonStyleJSON(cleanMeta));
+    }
+  }
+
   return parts.join(" ");
 }
 
@@ -49,7 +91,8 @@ export function toPy(notebook: Notebook): string {
   }
 
   for (const cell of notebook.cells) {
-    const delimiter = buildDelimiter(cell.cell_type, cell.metadata);
+    const cleanMeta = cleanCellMetadata(cell.metadata);
+    const delimiter = buildDelimiter(cell.cell_type, cleanMeta);
     const src = joinSource(cell.source);
 
     if (cell.cell_type === "code") {

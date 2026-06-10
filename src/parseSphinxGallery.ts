@@ -1,5 +1,5 @@
 import { codeCell, markdownCell, makeNotebook, type Cell, type Notebook } from "./notebook";
-import { parseFrontMatter } from "./utils";
+import { parseYAMLBlock } from "./utils";
 
 // ---------------------------------------------------------------------------
 // RST helpers
@@ -132,7 +132,7 @@ export function parseSphinxGallery(text: string): Notebook {
       i++;
     }
     i++; // skip closing # ---
-    notebookMeta = parseFrontMatter(fmLines);
+    notebookMeta = parseYAMLBlock(fmLines);
   }
 
   // Skip any leading empty lines before checking for docstring

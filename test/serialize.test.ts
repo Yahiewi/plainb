@@ -56,7 +56,7 @@ describe("toMystMd", () => {
   test("markdown cell with metadata → +++ {json}", () => {
     const nb = makeNotebook([markdownCell("Content.", { tags: ["foo"] })]);
     const out = toMystMd(nb);
-    assert.ok(out.includes('+++ {"tags":["foo"]}'));
+    assert.ok(out.includes('+++ {"tags": ["foo"]}'));
   });
 
   test("notebook metadata → YAML front matter", () => {
@@ -137,6 +137,43 @@ describe("toMystMd", () => {
     assert.deepEqual(nb2.metadata.kernelspec, kernelspec);
     assert.deepEqual(nb2.metadata.language_info, language_info);
   });
+
+  test("round-trip: complex nested cell metadata in YAML block", () => {
+    const nb = makeNotebook([
+      codeCell("a", {
+        nbgrader: {
+          grade: false,
+          grade_id: "cell-cb019a2142f5c180",
+          locked: true,
+          schema_version: 3,
+          solution: false,
+          task: false
+        }
+      })
+    ]);
+    const serialized = toMystMd(nb);
+    assert.ok(serialized.includes("---"));
+    assert.ok(serialized.includes("nbgrader:"));
+    const nb2 = parseMystMd(serialized);
+    assert.deepEqual(nb2.cells[0].metadata.nbgrader, nb.cells[0].metadata.nbgrader);
+  });
+
+  test("cleanCellMetadata strips transient keys but preserves nbgrader and locked in toMystMd", () => {
+    const nb = makeNotebook([
+      codeCell("a", {
+        trusted: true,
+        collapsed: false,
+        locked: true,
+        nbgrader: { grade: false }
+      })
+    ]);
+    const serialized = toMystMd(nb);
+    assert.ok(!serialized.includes("trusted"), "trusted must be stripped");
+    assert.ok(!serialized.includes("collapsed"), "collapsed must be stripped");
+    assert.ok(serialized.includes("locked"), "locked must be preserved");
+    assert.ok(serialized.includes("nbgrader"), "nbgrader must be preserved");
+  });
+
 
   test("empty notebook → just a newline", () => {
     const nb = makeNotebook([]);
@@ -255,6 +292,44 @@ describe("toPy", () => {
     assert.equal(nb2.cells[2].cell_type, "markdown");
     assert.equal(nb2.cells[3].cell_type, "code");
   });
+
+  test("round-trip: complex nested cell metadata in Percent format", () => {
+    const nb = makeNotebook([
+      codeCell("a", {
+        nbgrader: {
+          grade: false,
+          grade_id: "cell-cb019a2142f5c180",
+          locked: true,
+        }
+      }),
+      codeCell("b", {
+        tags: ["hide-input"],
+        name: "cell-name"
+      })
+    ]);
+    const serialized = toPy(nb);
+    const nb2 = parsePy(serialized);
+    assert.deepEqual(nb2.cells[0].metadata.nbgrader, nb.cells[0].metadata.nbgrader);
+    assert.deepEqual(nb2.cells[1].metadata.tags, ["hide-input"]);
+    assert.deepEqual(nb2.cells[1].metadata.name, "cell-name");
+  });
+
+  test("cleanCellMetadata strips transient keys but preserves nbgrader and tags in toPy", () => {
+    const nb = makeNotebook([
+      codeCell("a", {
+        trusted: true,
+        collapsed: false,
+        tags: ["tag1"],
+        nbgrader: { grade: false }
+      })
+    ]);
+    const serialized = toPy(nb);
+    assert.ok(!serialized.includes("trusted"), "trusted must be stripped");
+    assert.ok(!serialized.includes("collapsed"), "collapsed must be stripped");
+    assert.ok(serialized.includes("tags"), "tags must be preserved");
+    assert.ok(serialized.includes("nbgrader"), "nbgrader must be preserved");
+  });
+
 });
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { codeCell, markdownCell, makeNotebook, type Cell, type Notebook } from "./notebook.js";
-import { parseFrontMatter } from "./utils.js";
+import { parseYAMLBlock } from "./utils.js";
 
 // ---------------------------------------------------------------------------
 // Classic markdown parser
@@ -40,7 +40,7 @@ export function parseClassicMd(text: string): Notebook {
       i++;
     }
     i++; // skip closing ---
-    notebookMeta = parseFrontMatter(fmLines);
+    notebookMeta = parseYAMLBlock(fmLines);
   }
 
   while (i < lines.length) {
