@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/notebook-link/plainb/compare/v1.8.0...v1.9.0) (2026-06-11)
+
+
+### Features
+
+* Add cell metadata compatibility and tests ([#16](https://github.com/notebook-link/plainb/issues/16)) ([fe596a6](https://github.com/notebook-link/plainb/commit/fe596a6169dd4b2460505742b6a6558a18818b6d))
+
 # [1.8.0](https://github.com/notebook-link/plainb/compare/v1.7.1...v1.8.0) (2026-06-03)
 
 
