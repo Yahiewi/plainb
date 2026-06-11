@@ -6,7 +6,7 @@ import {
   type Cell,
   type Notebook,
 } from "./notebook";
-import { parseFrontMatter } from "./utils";
+import { parseYAMLBlock } from "./utils";
 
 // ---------------------------------------------------------------------------
 // MyST notebook format parser
@@ -54,28 +54,6 @@ function substituteInlineRoles(line: string): string {
   return line;
 }
 
-/** Minimal YAML/JSON option parser for cell metadata.
- *  Handles flat key:value and key: [flow, list] only. */
-function parseOptions(lines: string[]): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const line of lines) {
-    const m = line.match(/^([\w-]+):\s*(.*)/);
-    if (!m) continue;
-    const key = m[1];
-    const val = m[2].trim();
-    if (val.startsWith("[") || val.startsWith("{")) {
-      try {
-        result[key] = JSON.parse(val);
-      } catch {
-        result[key] = val;
-      }
-    } else {
-      result[key] = val;
-    }
-  }
-  return result;
-}
-
 function stripTrailingBlank(lines: string[]): string[] {
   let end = lines.length;
   while (end > 0 && lines[end - 1].trim() === "") end--;
@@ -109,7 +87,7 @@ export function parseMystMd(text: string): Notebook {
       i++;
     }
     i++; // skip closing ---
-    notebookMeta = parseFrontMatter(fmLines);
+    notebookMeta = parseYAMLBlock(fmLines);
   }
 
   while (i < lines.length) {
@@ -182,7 +160,7 @@ export function parseMystMd(text: string): Notebook {
         }
       }
 
-      const cellMeta = parseOptions(optionLines);
+      const cellMeta = parseYAMLBlock(optionLines);
 
       // Skip blank line after options
       if (i < lines.length && lines[i].trim() === "") i++;
