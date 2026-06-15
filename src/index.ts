@@ -20,7 +20,7 @@ import { toClassicMd } from "./toClassicMd";
 import { toMystMd } from "./toMystMd";
 import { toSphinxGallery } from "./toSphinxGallery";
 import type { PlainbFormat } from "./detect";
-import type { Notebook } from "./notebook";
+import type { Notebook, SerializationOptions } from "./notebook";
 
 /**
  * Parse a file by explicitly providing the format.
@@ -41,9 +41,13 @@ export function parse(text: string, format: "py" | "md" | "sphinx-gallery"): Not
  * @param notebook - the notebook to serialize
  * @param format - the format to serialize to, "py", "md", or "sphinx-gallery"
  */
-export function serialize(notebook: Notebook, format: "py" | "md" | "sphinx-gallery"): string {
-  if (format === "py") return toPy(notebook);
-  if (format === "md") return toMystMd(notebook);
+export function serialize(
+  notebook: Notebook,
+  format: "py" | "md" | "sphinx-gallery",
+  options?: SerializationOptions
+): string {
+  if (format === "py") return toPy(notebook, options);
+  if (format === "md") return toMystMd(notebook, options);
   if (format === "sphinx-gallery") return toSphinxGallery(notebook);
   throw new Error(`Unknown format: "${format}". Expected "py", "md", or "sphinx-gallery".`);
 }
@@ -73,14 +77,18 @@ export function parseFormat(text: string, format: PlainbFormat): Notebook {
  * @param notebook - the notebook to serialize
  * @param format - the target format
  */
-export function serializeFormat(notebook: Notebook, format: PlainbFormat): string {
+export function serializeFormat(
+  notebook: Notebook,
+  format: PlainbFormat,
+  options?: SerializationOptions
+): string {
   switch (format) {
     case "percent":
-      return toPy(notebook);
+      return toPy(notebook, options);
     case "sphinx-gallery":
       return toSphinxGallery(notebook);
     case "myst":
-      return toMystMd(notebook);
+      return toMystMd(notebook, options);
     case "classic":
       return toClassicMd(notebook);
   }

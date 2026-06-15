@@ -10,6 +10,7 @@ import { parseClassicMd } from "../src/parseClassicMd.js";
 import { parseMystMd } from "../src/parseMystMd.js";
 import { parseSphinxGallery } from "../src/parseSphinxGallery.js";
 import { makeNotebook, codeCell, markdownCell, rawCell } from "../src/notebook.js";
+import { filterMetadata } from "../src/utils.js";
 
 // ---------------------------------------------------------------------------
 // toMystMd
@@ -544,5 +545,86 @@ describe("serialize", () => {
     const nb = parseSphinxGallery(src);
     const nb2 = parseSphinxGallery(serialize(nb, "sphinx-gallery"));
     assert.equal(nb2.cells.length, nb.cells.length);
+  });
+});
+
+describe("filterMetadata & serialization options", () => {
+  test("filters metadata with simple inclusions", () => {
+    const meta = { a: 1, b: 2, c: 3 };
+    const filtered = filterMetadata(meta, "a,b");
+    assert.deepEqual(filtered, { a: 1, b: 2 });
+  });
+
+  test("filters metadata with simple exclusions", () => {
+    const meta = { a: 1, b: 2, c: 3 };
+    const filtered = filterMetadata(meta, "-b");
+    assert.deepEqual(filtered, { a: 1, c: 3 });
+  });
+
+  test("filters metadata with 'all'", () => {
+    const meta = { a: 1, b: 2, c: 3 };
+    const filtered = filterMetadata(meta, "all,-b");
+    assert.deepEqual(filtered, { a: 1, c: 3 });
+  });
+
+  test("filters metadata with 'none'", () => {
+    const meta = { a: 1, b: 2, c: 3 };
+    const filtered = filterMetadata(meta, "none,a");
+    assert.deepEqual(filtered, { a: 1 });
+  });
+
+  test("filters metadata with nested dot paths", () => {
+    const meta = {
+      kernelspec: { name: "python3", display_name: "Python 3" },
+      jupytext: { text_representation: { version: "1.0", format: "percent" } },
+      other: 42
+    };
+
+    // Keep all, but exclude specific nested keys
+    const filtered1 = filterMetadata(meta, "all,-jupytext.text_representation.version,-other");
+    assert.deepEqual(filtered1, {
+      kernelspec: { name: "python3", display_name: "Python 3" },
+      jupytext: { text_representation: { format: "percent" } }
+    });
+
+    // Exclude all, but include specific nested keys
+    const filtered2 = filterMetadata(meta, "kernelspec.name,jupytext.text_representation");
+    assert.deepEqual(filtered2, {
+      kernelspec: { name: "python3" },
+      jupytext: { text_representation: { version: "1.0", format: "percent" } }
+    });
+  });
+
+  test("integration: custom filters applied in toMystMd and toPy", () => {
+    const nb = makeNotebook(
+      [codeCell("x = 1", { tag: "value", trusted: true })],
+      { kernelspec: { name: "python3" }, language_info: { name: "python" } }
+    );
+
+    // Default myst md serialization (no options) should keep all notebook metadata and clean certain cell metadata
+    const mystDefault = toMystMd(nb);
+    assert.ok(mystDefault.includes("kernelspec:"));
+    assert.ok(mystDefault.includes("language_info:"));
+    assert.ok(!mystDefault.includes("trusted"));
+
+    // Myst MD serialization with filters
+    const mystFiltered = toMystMd(nb, {
+      notebookMetadataFilter: "kernelspec",
+      cellMetadataFilter: "all,-tag"
+    });
+    assert.ok(mystFiltered.includes("kernelspec:"));
+    assert.ok(!mystFiltered.includes("language_info:"));
+    assert.ok(mystFiltered.includes("trusted: true"));
+    assert.ok(!mystFiltered.includes("tag:"));
+
+    // Py percent format serialization with filters
+    const pyFiltered = toPy(nb, {
+      notebookMetadataFilter: "language_info",
+      cellMetadataFilter: "tag"
+    });
+    assert.ok(!pyFiltered.includes("kernelspec:"));
+    assert.ok(pyFiltered.includes("language_info:"));
+    assert.ok(!pyFiltered.includes("trusted: true"));
+    assert.ok(pyFiltered.includes("tag="));
   });
 });
