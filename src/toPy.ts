@@ -1,5 +1,5 @@
-import type { Notebook } from "./notebook";
-import { stringifyYAML, pythonStyleJSON, cleanCellMetadata } from "./utils";
+import type { Notebook, SerializationOptions } from "./notebook";
+import { stringifyYAML, pythonStyleJSON, cleanCellMetadata, filterMetadata } from "./utils";
 
 // ---------------------------------------------------------------------------
 // Notebook → Python percent format serializer
@@ -78,11 +78,16 @@ function buildDelimiter(cellType: string, meta: Record<string, unknown>): string
  * - Raw cells → `# %% [raw]` delimiter + `# `-prefixed lines
  * - Cell name and tags from metadata are encoded in the delimiter line
  */
-export function toPy(notebook: Notebook): string {
+export function toPy(notebook: Notebook, options?: SerializationOptions): string {
   const parts: string[] = [];
 
-  if (Object.keys(notebook.metadata).length > 0) {
-    const yamlStr = stringifyYAML({ jupyter: notebook.metadata });
+  const notebookMeta =
+    options?.notebookMetadataFilter !== undefined
+      ? filterMetadata(notebook.metadata, options.notebookMetadataFilter)
+      : notebook.metadata;
+
+  if (Object.keys(notebookMeta).length > 0) {
+    const yamlStr = stringifyYAML({ jupyter: notebookMeta });
     const commentedYaml = yamlStr
       .split("\n")
       .map((line) => (line === "" ? "#" : `# ${line}`))
@@ -91,7 +96,10 @@ export function toPy(notebook: Notebook): string {
   }
 
   for (const cell of notebook.cells) {
-    const cleanMeta = cleanCellMetadata(cell.metadata);
+    const cleanMeta =
+      options?.cellMetadataFilter !== undefined
+        ? filterMetadata(cell.metadata, options.cellMetadataFilter)
+        : cleanCellMetadata(cell.metadata);
     const delimiter = buildDelimiter(cell.cell_type, cleanMeta);
     const src = joinSource(cell.source);
 

@@ -1,5 +1,5 @@
-import type { Notebook } from "./notebook";
-import { stringifyYAML, pythonStyleJSON, cleanCellMetadata } from "./utils";
+import type { Notebook, SerializationOptions } from "./notebook";
+import { stringifyYAML, pythonStyleJSON, cleanCellMetadata, filterMetadata } from "./utils";
 
 // ---------------------------------------------------------------------------
 // Notebook → MyST Markdown serializer
@@ -48,16 +48,25 @@ function serializeCompactOptions(meta: Record<string, unknown>): string[] {
  * - Code cells → ` ```{code-cell} ` directive with shorthand options
  * - Raw cells  → ` ```{raw-cell} ` directive with shorthand options
  */
-export function toMystMd(notebook: Notebook): string {
+export function toMystMd(notebook: Notebook, options?: SerializationOptions): string {
   const parts: string[] = [];
 
-  if (Object.keys(notebook.metadata).length > 0) {
-    const yamlStr = stringifyYAML(notebook.metadata);
+  const notebookMeta =
+    typeof options?.notebookMetadataFilter === "string"
+      ? filterMetadata(notebook.metadata, options.notebookMetadataFilter)
+      : notebook.metadata;
+
+  if (Object.keys(notebookMeta).length > 0) {
+    const yamlStr = stringifyYAML(notebookMeta);
     parts.push(`---\n${yamlStr}\n---`);
   }
 
   for (const cell of notebook.cells) {
-    const cleanMeta = cleanCellMetadata(cell.metadata);
+    const cleanMeta =
+      options?.cellMetadataFilter !== undefined
+        ? filterMetadata(cell.metadata, options.cellMetadataFilter)
+        : cleanCellMetadata(cell.metadata);
+
     if (cell.cell_type === "markdown") {
       const hasMeta = Object.keys(cleanMeta).length > 0;
       if (parts.length > 0 || hasMeta) {

@@ -111,3 +111,8 @@ export function rawCell(
 export function makeNotebook(cells: Cell[], metadata: Record<string, unknown> = {}): Notebook {
   return { nbformat: 4, nbformat_minor: 5, metadata, cells };
 }
+
+export interface SerializationOptions {
+  notebookMetadataFilter?: string;
+  cellMetadataFilter?: string;
+}

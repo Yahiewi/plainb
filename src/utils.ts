@@ -245,19 +245,148 @@ export function pythonStyleJSON(val: unknown): string {
  */
 export function cleanCellMetadata(meta: Record<string, unknown>): Record<string, unknown> {
   const clean = { ...meta };
-  const keysToFilter = [
-    "trusted",
-    "collapsed",
-    "scrolled",
-    "autoscroll",
-    "ExecuteTime",
-    "execution",
-    "heading_collapsed",
-    "jp-MarkdownHeadingCollapsed",
-    "user_expressions",
-  ];
+  const keysToFilter = ["autoscroll", "collapsed", "scrolled", "trusted", "ExecuteTime"];
   for (const key of keysToFilter) {
     delete clean[key];
   }
   return clean;
+}
+
+interface FilterRule {
+  isNegated: boolean;
+  keys: string[];
+}
+
+/**
+ * Evaluates a metadata key path against the filter rules to determine the action:
+ * - "include": keep the value as-is.
+ * - "exclude": drop the value.
+ * - "traverse": recurse into the nested object to apply more specific rules.
+ */
+function getPathAction(
+  path: string[],
+  rules: FilterRule[],
+  defaultInclude: boolean,
+): "include" | "exclude" | "traverse" {
+  // Check if there are any descendant rules (eg. nbgrader.grade)
+  const hasDescendantRule = rules.some((rule) => {
+    if (rule.keys.length > path.length) {
+      return path.every((k, i) => rule.keys[i] === k);
+    }
+    return false;
+  });
+
+  // Find the most specific rule that is a prefix (or equal) of the path
+  let bestMatchingRule: FilterRule | null = null;
+  for (const rule of rules) {
+    if (rule.keys.length <= path.length) {
+      const isPrefix = rule.keys.every((k, i) => path[i] === k);
+      if (isPrefix) {
+        if (!bestMatchingRule || rule.keys.length > bestMatchingRule.keys.length) {
+          bestMatchingRule = rule;
+        }
+      }
+    }
+  }
+
+  if (bestMatchingRule) {
+    if (bestMatchingRule.isNegated) {
+      if (hasDescendantRule) {
+        return "traverse";
+      }
+      return "exclude";
+    } else {
+      return "include";
+    }
+  }
+
+  if (hasDescendantRule) {
+    return "traverse";
+  }
+
+  return defaultInclude ? "include" : "exclude";
+}
+
+/**
+ * Filters metadata keys according to a Jupytext filter string.
+ * Supports positive/negative filters, all/none, and nested keys via dot-notation.
+ */
+export function filterMetadata(
+  meta: Record<string, unknown>,
+  filterStr: string,
+): Record<string, unknown> {
+  if (!filterStr || typeof filterStr !== "string") {
+    return meta;
+  }
+
+  const parts = filterStr
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const rules: FilterRule[] = [];
+  let defaultInclude = false;
+  let hasAll = false;
+  let hasMinusAll = false;
+  let hasNone = false;
+  let hasMinusNone = false;
+
+  for (const part of parts) {
+    if (part === "all") {
+      hasAll = true;
+    } else if (part === "-all") {
+      hasMinusAll = true;
+    } else if (part === "none") {
+      hasNone = true;
+    } else if (part === "-none") {
+      hasMinusNone = true;
+    } else {
+      const isNegated = part.startsWith("-");
+      const cleanPart = isNegated ? part.slice(1) : part;
+      rules.push({
+        isNegated,
+        keys: cleanPart
+          .split(".")
+          .map((s) => s.trim())
+          .filter(Boolean),
+      });
+    }
+  }
+
+  if (hasAll) {
+    defaultInclude = true;
+  } else if (hasMinusAll || hasNone) {
+    defaultInclude = false;
+  } else if (hasMinusNone) {
+    defaultInclude = true;
+  } else {
+    if (parts.length > 0 && parts[0].startsWith("-")) {
+      defaultInclude = true;
+    } else {
+      defaultInclude = false;
+    }
+  }
+
+  /**
+   * Recursively traverses and filters a metadata object tree using path evaluation actions.
+   */
+  function recurse(obj: Record<string, unknown>, currentPath: string[]): Record<string, unknown> {
+    const res: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const path = [...currentPath, key];
+      const action = getPathAction(path, rules, defaultInclude);
+      if (action === "include") {
+        res[key] = value;
+      } else if (action === "traverse") {
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          res[key] = recurse(value as Record<string, unknown>, path);
+        } else {
+          res[key] = value;
+        }
+      }
+    }
+    return res;
+  }
+
+  return recurse(meta, []);
 }
