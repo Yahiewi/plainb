@@ -51,9 +51,10 @@ function serializeCompactOptions(meta: Record<string, unknown>): string[] {
 export function toMystMd(notebook: Notebook, options?: SerializationOptions): string {
   const parts: string[] = [];
 
-  const notebookMeta = typeof options?.notebookMetadataFilter === "string"
-    ? filterMetadata(notebook.metadata, options.notebookMetadataFilter)
-    : notebook.metadata;
+  const notebookMeta =
+    typeof options?.notebookMetadataFilter === "string"
+      ? filterMetadata(notebook.metadata, options.notebookMetadataFilter)
+      : notebook.metadata;
 
   if (Object.keys(notebookMeta).length > 0) {
     const yamlStr = stringifyYAML(notebookMeta);
@@ -61,9 +62,10 @@ export function toMystMd(notebook: Notebook, options?: SerializationOptions): st
   }
 
   for (const cell of notebook.cells) {
-    const cleanMeta = options?.cellMetadataFilter !== undefined
-      ? filterMetadata(cell.metadata, options.cellMetadataFilter)
-      : cleanCellMetadata(cell.metadata);
+    const cleanMeta =
+      options?.cellMetadataFilter !== undefined
+        ? filterMetadata(cell.metadata, options.cellMetadataFilter)
+        : cleanCellMetadata(cell.metadata);
 
     if (cell.cell_type === "markdown") {
       const hasMeta = Object.keys(cleanMeta).length > 0;

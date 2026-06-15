@@ -44,7 +44,7 @@ export function parse(text: string, format: "py" | "md" | "sphinx-gallery"): Not
 export function serialize(
   notebook: Notebook,
   format: "py" | "md" | "sphinx-gallery",
-  options?: SerializationOptions
+  options?: SerializationOptions,
 ): string {
   if (format === "py") return toPy(notebook, options);
   if (format === "md") return toMystMd(notebook, options);
@@ -80,7 +80,7 @@ export function parseFormat(text: string, format: PlainbFormat): Notebook {
 export function serializeFormat(
   notebook: Notebook,
   format: PlainbFormat,
-  options?: SerializationOptions
+  options?: SerializationOptions,
 ): string {
   switch (format) {
     case "percent":

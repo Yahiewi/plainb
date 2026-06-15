@@ -245,13 +245,7 @@ export function pythonStyleJSON(val: unknown): string {
  */
 export function cleanCellMetadata(meta: Record<string, unknown>): Record<string, unknown> {
   const clean = { ...meta };
-  const keysToFilter = [
-    "autoscroll",
-    "collapsed",
-    "scrolled",
-    "trusted",
-    "ExecuteTime"
-  ];
+  const keysToFilter = ["autoscroll", "collapsed", "scrolled", "trusted", "ExecuteTime"];
   for (const key of keysToFilter) {
     delete clean[key];
   }
@@ -269,7 +263,11 @@ interface FilterRule {
  * - "exclude": drop the value.
  * - "traverse": recurse into the nested object to apply more specific rules.
  */
-function getPathAction(path: string[], rules: FilterRule[], defaultInclude: boolean): "include" | "exclude" | "traverse" {
+function getPathAction(
+  path: string[],
+  rules: FilterRule[],
+  defaultInclude: boolean,
+): "include" | "exclude" | "traverse" {
   // Check if there are any descendant rules (eg. nbgrader.grade)
   const hasDescendantRule = rules.some((rule) => {
     if (rule.keys.length > path.length) {
@@ -313,7 +311,10 @@ function getPathAction(path: string[], rules: FilterRule[], defaultInclude: bool
  * Filters metadata keys according to a Jupytext filter string.
  * Supports positive/negative filters, all/none, and nested keys via dot-notation.
  */
-export function filterMetadata(meta: Record<string, unknown>, filterStr: string): Record<string, unknown> {
+export function filterMetadata(
+  meta: Record<string, unknown>,
+  filterStr: string,
+): Record<string, unknown> {
   if (!filterStr || typeof filterStr !== "string") {
     return meta;
   }

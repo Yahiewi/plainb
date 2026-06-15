@@ -78,15 +78,13 @@ function buildDelimiter(cellType: string, meta: Record<string, unknown>): string
  * - Raw cells → `# %% [raw]` delimiter + `# `-prefixed lines
  * - Cell name and tags from metadata are encoded in the delimiter line
  */
-export function toPy(
-  notebook: Notebook,
-  options?: SerializationOptions
-): string {
+export function toPy(notebook: Notebook, options?: SerializationOptions): string {
   const parts: string[] = [];
 
-  const notebookMeta = options?.notebookMetadataFilter !== undefined
-    ? filterMetadata(notebook.metadata, options.notebookMetadataFilter)
-    : notebook.metadata;
+  const notebookMeta =
+    options?.notebookMetadataFilter !== undefined
+      ? filterMetadata(notebook.metadata, options.notebookMetadataFilter)
+      : notebook.metadata;
 
   if (Object.keys(notebookMeta).length > 0) {
     const yamlStr = stringifyYAML({ jupyter: notebookMeta });
@@ -98,9 +96,10 @@ export function toPy(
   }
 
   for (const cell of notebook.cells) {
-    const cleanMeta = options?.cellMetadataFilter !== undefined
-      ? filterMetadata(cell.metadata, options.cellMetadataFilter)
-      : cleanCellMetadata(cell.metadata);
+    const cleanMeta =
+      options?.cellMetadataFilter !== undefined
+        ? filterMetadata(cell.metadata, options.cellMetadataFilter)
+        : cleanCellMetadata(cell.metadata);
     const delimiter = buildDelimiter(cell.cell_type, cleanMeta);
     const src = joinSource(cell.source);
 
