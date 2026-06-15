@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/notebook-link/plainb/compare/v1.9.0...v1.10.0) (2026-06-15)
+
+
+### Features
+
+* Add metadata filtering options ([#17](https://github.com/notebook-link/plainb/issues/17)) ([bd258c2](https://github.com/notebook-link/plainb/commit/bd258c200121dd93502eab9ac32af1ceb49b9e24))
+
 # [1.9.0](https://github.com/notebook-link/plainb/compare/v1.8.0...v1.9.0) (2026-06-11)
 
 
